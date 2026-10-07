@@ -1,0 +1,16 @@
+*.html
+*.css
+*.js
+*.png
+*.jpg
+*.gif
+*.svg
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+*.log
+*.tmp
+*.bak
+*.swp
+*.DS_Store
