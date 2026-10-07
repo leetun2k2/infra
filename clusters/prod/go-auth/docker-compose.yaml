@@ -1,0 +1,52 @@
+services:
+  go-auth:
+    image: go-auth:latest
+    container_name: go-auth
+    restart: unless-stopped
+    env_file:
+      - ./go-auth/.env
+    volumes:
+      - ./go-auth/keys:/app/keys:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - global
+      - internal
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: go-auth-postgres
+    restart: unless-stopped
+    env_file:
+      - ./postgres/.env
+    volumes:
+      - go-auth-db-data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: go-auth-redis
+    restart: unless-stopped
+    env_file:
+      - ./redis/.env
+    command: >
+      sh -c "redis-server
+      --requirepass \"$$REDIS_PASSWORD\"
+      --user $$REDIS_USERNAME on \">$$REDIS_PASSWORD\" '~*' '&*' '+@all'"
+    volumes:
+      - go-auth-redis-data:/data
+    networks:
+      - internal
+
+networks:
+  global:
+    driver: bridge
+    external: true
+  internal:
+    driver: bridge
+
+volumes:
+  go-auth-db-data:
+  go-auth-redis-data:
