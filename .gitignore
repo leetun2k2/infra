@@ -1,4 +1,5 @@
 *.html
+!clusters/prod/gateway/nginx/html/**
 *.css
 *.js
 *.png

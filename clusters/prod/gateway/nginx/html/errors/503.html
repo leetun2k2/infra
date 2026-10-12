@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>503 &bull; Unavailable</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #eab308;
+      --btn-bg: #f8fafc;
+      --btn-text: #090d16;
+      --btn-sec-bg: rgba(255, 255, 255, 0.05);
+      --btn-sec-text: #f8fafc;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --card-bg: #ffffff;
+        --border: rgba(0, 0, 0, 0.08);
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #ca8a04;
+        --btn-bg: #0f172a;
+        --btn-text: #ffffff;
+        --btn-sec-bg: rgba(0, 0, 0, 0.04);
+        --btn-sec-text: #0f172a;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.3);
+    }
+    .code {
+      font-size: 3.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      color: var(--muted);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 1.25rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+    }
+    .btn-secondary {
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      border-color: var(--border);
+    }
+    @media (max-width: 440px) {
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="code">503</div>
+    <h1>Service Unavailable</h1>
+    <p>Service is temporarily down for maintenance. Please check back soon.</p>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="window.location.reload()" type="button">Refresh</button>
+      <a class="btn btn-secondary" href="/">Home</a>
+    </div>
+  </main>
+</body>
+</html>
