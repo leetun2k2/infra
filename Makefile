@@ -13,3 +13,6 @@ go-auth-up:
 web-admin-up:
 	docker-compose -f clusters/prod/web-admin/docker-compose.yaml up -d --force-recreate
 
+devops-up:
+	docker-compose -f clusters/prod/devops/docker-compose.yaml up -d --force-recreate
+

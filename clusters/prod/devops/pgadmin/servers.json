@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "go-auth-postgres",
+      "Group": "Servers",
+      "Host": "go-auth-postgres",
+      "Port": 5432,
+      "MaintenanceDB": "go_auth",
+      "Username": "go_auth",
+      "SSLMode": "prefer"
+    }
+  }
+}

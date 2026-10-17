@@ -1,0 +1,41 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: devops-pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - devops-pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+    networks:
+      - global
+      - go-auth_internal
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: devops-redisinsight
+    restart: unless-stopped
+    environment:
+      - RI_REDIS_HOST=${REDIS_HOST:-go-auth-redis}
+      - RI_REDIS_PORT=${REDIS_PORT:-6379}
+      - RI_REDIS_ALIAS=${REDIS_ALIAS:-go-auth-redis}
+      - RI_REDIS_USERNAME=${REDIS_USERNAME:-go_auth}
+      - RI_REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - devops-redisinsight-data:/data
+    networks:
+      - global
+      - go-auth_internal
+
+networks:
+  global:
+    driver: bridge
+    external: true
+  go-auth_internal:
+    driver: bridge
+    external: true
+
+volumes:
+  devops-pgadmin-data:
+  devops-redisinsight-data:
