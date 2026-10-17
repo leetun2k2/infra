@@ -6,6 +6,15 @@ services:
     networks:
       - global
 
+  web-admin-auth:
+    image: web-admin-auth:latest
+    container_name: web-admin-auth
+    restart: unless-stopped
+    env_file:
+      - ./web-admin-auth/.env
+    networks:
+      - global
+
 networks:
   global:
     driver: bridge
