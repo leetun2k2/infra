@@ -21,6 +21,7 @@ in Compose; the auth runtime can run with Redis disabled.
 
 - `clusters/prod/gateway`: Nginx, upstreams, virtual hosts, static errors.
 - `clusters/prod/go-auth`: auth, PostgreSQL 16 (shared instance with dedicated `auth` schema for low traffic), Redis 7, persistent volumes.
+- `clusters/prod/go-product`: product catalog service, PostgreSQL 16 `go_product` database, persistent read model.
 - `clusters/prod/web-admin`: frontend and stateless cookie adapter.
 - `clusters/prod/devops`: database administration tools.
 

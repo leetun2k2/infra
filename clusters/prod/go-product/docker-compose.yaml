@@ -1,0 +1,18 @@
+services:
+  go-product:
+    image: go-product:latest
+    container_name: go-product
+    restart: unless-stopped
+    env_file:
+      - ./go-product/.env
+    networks:
+      - global
+      - internal
+
+networks:
+  global:
+    driver: bridge
+    external: true
+  internal:
+    name: go-auth_internal
+    external: true
