@@ -20,12 +20,18 @@ in Compose; the auth runtime can run with Redis disabled.
 ## Current layout
 
 - `clusters/prod/gateway`: Nginx, upstreams, virtual hosts, static errors.
-- `clusters/prod/go-auth`: auth, PostgreSQL 16, Redis 7, persistent volumes.
+- `clusters/prod/go-auth`: auth, PostgreSQL 16 (shared instance with dedicated `auth` schema for low traffic), Redis 7, persistent volumes.
 - `clusters/prod/web-admin`: frontend and stateless cookie adapter.
 - `clusters/prod/devops`: database administration tools.
 
 These are Docker Compose manifests using an external `global` network. No GCP
 deployment is defined here. The `prod` path is not evidence of a live release.
+
+## Network architecture
+
+The infrastructure strictly isolates traffic across two network tiers:
+- **`global`**: Shared external-facing bridge network used for the gateway, frontend web apps (`web-admin`), and BFF adapters (`web-admin-auth`) where clients and browsers can route/call directly.
+- **`internal`**: Private bridge network (`<service>_internal`) used exclusively for internal services, persistors, core shared backends, databases (`postgres`), and caches (`redis`). Databases and caches must only reside in the internal network and must never join `global`. Services bridging the tiers (like `go-auth`) join both networks to accept adapter calls while communicating with internal persistors.
 Images use local `latest` tags and startup ordering lacks health gates. The
 admin host uses local HTTP; its TLS listener is commented out. Complete the
 [delivery plan](../go-auth/specs/2026-10-17-smb-auth-core/02-delivery-phases.md)
