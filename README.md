@@ -9,8 +9,7 @@ operating console for that core.
 flowchart LR
   Browser[Browser] --> Gateway[Nginx gateway]
   Gateway --> UI[web-admin]
-  Gateway --> Adapter[web-admin-auth]
-  Adapter --> Auth[go-auth]
+  Gateway --> Auth[go-auth]
   Auth --> DB[(PostgreSQL)]
 ```
 
@@ -22,7 +21,7 @@ in Compose; the auth runtime can run with Redis disabled.
 - `clusters/prod/gateway`: Nginx, upstreams, virtual hosts, static errors.
 - `clusters/prod/go-auth`: auth, PostgreSQL 16 (shared instance with dedicated `auth` schema for low traffic), Redis 7, persistent volumes.
 - `clusters/prod/go-product`: product catalog service, PostgreSQL 16 `go_product` database, persistent read model.
-- `clusters/prod/web-admin`: frontend and stateless cookie adapter.
+- `clusters/prod/web-admin`: static frontend.
 - `clusters/prod/devops`: database administration tools.
 
 These are Docker Compose manifests using an external `global` network. No GCP
@@ -31,18 +30,21 @@ deployment is defined here. The `prod` path is not evidence of a live release.
 ## Network architecture
 
 The infrastructure strictly isolates traffic across two network tiers:
-- **`global`**: Shared external-facing bridge network used for the gateway, frontend web apps (`web-admin`), and BFF adapters (`web-admin-auth`) where clients and browsers can route/call directly.
-- **`internal`**: Private bridge network (`<service>_internal`) used exclusively for internal services, persistors, core shared backends, databases (`postgres`), and caches (`redis`). Databases and caches must only reside in the internal network and must never join `global`. Services bridging the tiers (like `go-auth`) join both networks to accept adapter calls while communicating with internal persistors.
-Images use local `latest` tags and startup ordering lacks health gates. The
-admin host uses local HTTP; its TLS listener is commented out. Complete the
-[delivery plan](../go-auth/specs/2026-10-17-smb-auth-core/02-delivery-phases.md)
-before treating the stack as production-ready.
+
+- **`global`**: Shared external-facing bridge network used for the gateway, frontend web apps (`web-admin`), and any external-facing BFF adapters where clients and browsers can route/call directly.
+- **`internal`**: Private bridge network (`<service>_internal`) used exclusively for internal services, persistors, core shared backends, databases (`postgres`), and caches (`redis`). Databases and caches must only reside in the internal network and must never join `global`. The gateway bridges both tiers. `go-auth` joins only the named `go-auth_internal` network, which the gateway joins as an external network; start the auth stack before the gateway. This bridge permits outbound provider OAuth calls; it is not a Docker `internal: true` network.
+  Images use local `latest` tags and startup ordering lacks health gates. The
+  admin host uses local HTTP; its TLS listener is commented out. Complete the
+  [delivery plan](../go-auth/specs/2026-10-17-smb-auth-core/02-delivery-phases.md)
+  before treating the stack as production-ready.
 
 ## Routing and configuration
 
-The admin host routes `/api/auth/v1/` and `/api/admin/v1/` to `web-admin-auth`;
-`/auth/callback` belongs to the adapter. Google provider callbacks reach
-`go-auth`; `/` reaches the frontend. Gateway health does not prove application
+The admin host routes `/api/auth/v1/`, `/api/admin/v1/`, `/auth/callback`,
+and Google provider callbacks directly to `go-auth`; `/` reaches the frontend.
+The separate `web-admin-auth` container and upstream have been removed.
+Enable and configure the [go-auth browser boundary](../go-auth/specs/2026-11-15-browser-auth-merge/browser-auth.md)
+before switching an existing deployment. Gateway health does not prove application
 or database readiness.
 
 Use `go-auth/config/config.go` and embedded defaults as runtime truth. The infra
@@ -75,7 +77,8 @@ for structural checks when supported; this does not prove runtime readiness.
 ## Release gates
 
 The [core plan](../go-auth/specs/2026-10-17-smb-auth-core/00-overview.md) sets
-ordered backend, adapter, UI, and rollout gates. Build all three app images,
+historical backend, adapter, UI, and rollout gates. The adapter is now merged
+into `go-auth`; build the auth and frontend app images,
 pin release tags, identify target/schema, supply secrets, prepare backup/restore,
 apply only the intended migration, and bootstrap the first client/admin before
 routing live traffic. No migration runner or bootstrap is wired into Compose.
@@ -85,3 +88,28 @@ images, keys, and a compatible database rollback path. Never use `down -v` or
 the initial down migration for release rollback. Agy coordinates phases; Claude
 implements bounded changes. See the
 [orchestrator handoff](../go-auth/specs/2026-10-17-smb-auth-core/03-agy-orchestrator.md).
+
+## Browser auth consolidation
+
+The deployment now consists of `web-admin`, the gateway, and `go-auth` with its
+browser boundary enabled. Keep the existing database, registration UUIDs, JWT
+signing keys, and provider encryption key. Supply a separate browser cookie key
+and the registration's backend auth secret through protected server environment.
+Do not put these values in `VITE_*` variables.
+
+For an authorized rollout, build the changed images, configure browser auth,
+and retain the approved product redirect `<browser-origin>/auth/callback` in the
+registration. The provider redirect continues to target the go-auth provider
+callback. Use the exact browser origin, including its port, and require HTTPS
+and Secure cookies outside explicitly configured local development.
+
+Start/recreate the auth stack before the gateway: the auth stack owns
+`go-auth_internal`, which the gateway references externally. Preserve the Compose
+project name and volumes. Recreate the gateway to attach that network. Once
+login and admin access are verified, remove the old adapter container; removing
+its service from YAML alone does not stop an already-running container.
+Existing adapter cookies are not migrated; users may need to sign in again.
+
+Rollback requires the previous auth/frontend images, gateway/Compose manifests,
+and adapter image/config. Restore the old network attachments and adapter
+routing together. No schema migration is required by this consolidation.

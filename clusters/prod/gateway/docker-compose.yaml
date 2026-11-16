@@ -15,8 +15,12 @@ services:
       - ./nginx/html:/usr/share/nginx/html:ro
     networks:
       - global
+      - auth_internal
 
 networks:
   global:
     driver: bridge
+    external: true
+  auth_internal:
+    name: go-auth_internal
     external: true

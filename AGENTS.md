@@ -24,9 +24,9 @@ implements bounded tasks. Record actual checks and deployment evidence.
 
 ## Routing and secrets
 
-- Keep browser auth/admin calls behind `web-admin-auth`; it owns HttpOnly
-  cookies, OAuth state, CSRF, and server-side client credentials.
-- Send provider callbacks to `go-auth` and the product callback to the adapter.
+- Route browser auth/admin calls directly to `go-auth`; its browser boundary owns
+  HttpOnly cookies, OAuth state, CSRF, and server-side client credentials.
+- Send provider callbacks to `go-auth` and the browser callback to `go-auth`.
   Confirm scheme, host, port, issuer, and redirects as one contract.
 - Use TLS and secure cookies outside local development. Allow local origins
   only through explicit development configuration.

@@ -6,13 +6,9 @@ services:
     env_file:
       - ./go-product/.env
     networks:
-      - global
       - internal
 
 networks:
-  global:
-    driver: bridge
-    external: true
   internal:
     name: go-auth_internal
     external: true
